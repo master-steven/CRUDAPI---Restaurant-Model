@@ -1,0 +1,518 @@
+MY OWN PROPOSAL - 
+based on THIS Vision:::
+
+   NECESSITY-OF-FEATURE:
+The SHELL CODE; 
+
+
+                                        Fundamental Shell Scenario: 
+
+User inputs/submits an Order - Manager receives Order and Creates the Values Requested - Delivery Squad delivers Values Requested
+
+
+
+
+
+
+
+/users
+function generateToken():
+    //generate Auth token, passing this.user.group as a parameter
+       HTTP_RESPONSE_CALL(BODY);
+   
+UPDATE /add-user
+GET /users/groups
+POST /add-menu-item
+PUT /add-category
+GET-POST /login
+GET-GET-POST /update-featured..set_featured()
+GET-GET-PUT /delivery-team
+GET-GET-POST /delivery-team/dashboard
+GET  /delivery-team/dashboard/orders/{order_id}
+GET-PUT /register
+GET-POST /login
+GET /categories
+GET /menu
+GET-PUT /menu/?=categories
+GET /menu/?=page_size
+GET-PUT-POST-GET /menu&order_by=price
+GET-POST /add-to-cart
+GET /last-items-to-cart
+GET-PUT-POST/customers/dashboard
+GET /orders
+/
+
+
+    
+   
+settings.ini
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+	   'rest_framework.filters.OrderingFilter',
+    	    'rest_framework.filters.SearchFilter',
+
+    ),
+
+     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+
+
+}
+
+from django.urls import path
+from . import views
+
+Urls = [
+    path(‘home’)
+
+path(‘/api’, name=‘home’)
+
+
+    path(‘menu’
+    path(‘register-as-a’
+    path(‘featured’
+    
+]
+
+
+
+Var menu[‘login’, ‘register, ‘exit’, ‘]
+
+endpoints = [
+     /
+     /home
+        /users
+            /dashboard
+
+Html
+Head
+     Title
+ 
+  Nav
+    -/
+    -/index(loopback)
+    -/products
+    -/
+
+Body
+   
+
+
+from django.db import models
+import views
+# Create your models here.
+
+
+
+class nodeBookModel extends MenuItem()
+{
+     ID, title, price, inventory;
+
+
+    def __init__(self):
+        (['ID', 'title', 'price', 'inventory']);
+
+
+    nodeBookModel(userID, userTitle, userPrice, userInventory=""):
+        this.ID = userID;
+        this.title = userTitle;
+        this.price = userPrice;
+        this.inventory = userInventory;
+}
+
+
+from django.shortcuts import render
+
+MenuItemSerializer = models.ModelSerializer
+# Create your views here.
+query = MenuItem.objects.all()
+
+
+title = query.findElementbyID("title");
+price = query.findElementbyID("price");
+inventory = query.findElementbyID("inventory");
+
+
+
+modelTitle = models.CharField(max_length=255);
+modelPrice = models.DecimalField(max_digits=6, decimal_places=2);
+modelInventory = models.SmallIntegerField;
+
+
+MenuItemsView.id<MenuItems.id:
+filtered1 = query
+
+
+SingleMenuItemView(filtered1)
+
+
+README
+::::
+ pipenv shell 
+pipenv install  
+python manage.py makemigrations  
+python manage.py migrate 
+python manage.py runserver  
+
+
+
+
+:::settings/bootp.ini/libs-dependencies///rapid-deploys (static-linkings…8^P)
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.OrderingFilter',
+        'rest_framework.filters.SearchFilter',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 2
+}
+
+
+
+::::
+
+
+$models.py///templates.py
+from django.db import models
+from django.contrib.auth.models import User
+
+
+class Category(models.Model):
+    slug = models.SlugField()
+    title = models.CharField(max_length=255, db_index=True)
+
+
+class MenuItem(models.Model):
+    title = models.CharField(max_length=255, db_index=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2, db_index=True)
+    featured = models.BooleanField(db_index=True)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT)
+
+
+class Cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    menuitem = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
+    quantity = models.SmallIntegerField()
+    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    class Meta:
+        unique_together = ('menuitem', 'user')
+
+
+class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    delivery_crew = models.ForeignKey(
+        User, on_delete=models.SET_NULL, related_name="delivery_crew", null=True)
+    status = models.BooleanField(default=0, db_index=True)
+    total = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    date = models.DateField(db_index=True)
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name='order')
+    menuitem = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
+    quantity = models.SmallIntegerField()
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    class Meta:
+        unique_together = ('order', 'menuitem')
+
+
+
+
+:::
+
+$serializers.py
+from rest_framework import serializers
+from django.contrib.auth.models import User
+from decimal import Decimal
+
+from .models import Category, MenuItem, Cart, Order, OrderItem
+
+
+class CategorySerializer (serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'title', 'slug']
+
+
+class MenuItemSerializer(serializers.ModelSerializer):
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all()
+    )
+    # category = CategorySerializer(read_only=True)
+    class Meta:
+        model = MenuItem
+        fields = ['id', 'title', 'price', 'category', 'featured']
+
+
+class CartSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        default=serializers.CurrentUserDefault()
+    )
+
+
+    def validate(self, attrs):
+        attrs['price'] = attrs['quantity'] * attrs['unit_price']
+        return attrs
+
+    class Meta:
+        model = Cart
+        fields = ['user', 'menuitem', 'unit_price', 'quantity', 'price']
+        extra_kwargs = {
+            'price': {'read_only': True}
+        }
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['order', 'menuitem', 'quantity', 'price']
+
+
+class OrderSerializer(serializers.ModelSerializer):
+
+    orderitem = OrderItemSerializer(many=True, read_only=True, source='order')
+
+    class Meta:
+        model = Order
+        fields = ['id', 'user', 'delivery_crew',
+                  'status', 'date', 'total', 'orderitem']
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id','username','email']
+
+:::
+
+
+$views.py
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from .models import Category, MenuItem, Cart, Order, OrderItem
+from .serializers import CategorySerializer, MenuItemSerializer, CartSerializer, OrderSerializer, UserSerilializer
+from rest_framework.response import Response
+
+from rest_framework.permissions import IsAdminUser
+from django.shortcuts import  get_object_or_404
+
+from django.contrib.auth.models import Group, User
+
+from rest_framework import viewsets
+from rest_framework import status
+
+
+class CategoriesView(generics.ListCreateAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+    def get_permissions(self):
+        permission_classes = []
+        if self.request.method != 'GET':
+            permission_classes = [IsAuthenticated]
+
+        return [permission() for permission in permission_classes]
+
+class MenuItemsView(generics.ListCreateAPIView):
+    queryset = MenuItem.objects.all()
+    serializer_class = MenuItemSerializer
+    search_fields = ['category__title']
+    ordering_fields = ['price', 'inventory']
+
+    def get_permissions(self):
+        permission_classes = []
+        if self.request.method != 'GET':
+            permission_classes = [IsAuthenticated]
+
+        return [permission() for permission in permission_classes]
+
+
+class SingleMenuItemView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = MenuItem.objects.all()
+    serializer_class = MenuItemSerializer
+
+    def get_permissions(self):
+        permission_classes = []
+        if self.request.method != 'GET':
+            permission_classes = [IsAuthenticated]
+
+        return [permission() for permission in permission_classes]
+
+class CartView(generics.ListCreateAPIView):
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Cart.objects.all().filter(user=self.request.user)
+
+    def delete(self, request, *args, **kwargs):
+        Cart.objects.all().filter(user=self.request.user).delete()
+        return Response("ok")
+
+
+class OrderView(generics.ListCreateAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Order.objects.all()
+        elif self.request.user.groups.count()==0: #normal customer - no group
+            return Order.objects.all().filter(user=self.request.user)
+        elif self.request.user.groups.filter(name='Delivery Crew').exists(): #delivery crew
+            return Order.objects.all().filter(delivery_crew=self.request.user)  #only show oreders assigned to him
+        else: #delivery crew or manager
+            return Order.objects.all()
+        # else:
+        #     return Order.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        menuitem_count = Cart.objects.all().filter(user=self.request.user).count()
+        if menuitem_count == 0:
+            return Response({"message:": "no item in cart"})
+
+        data = request.data.copy()
+        total = self.get_total_price(self.request.user)
+        data['total'] = total
+        data['user'] = self.request.user.id
+        order_serializer = OrderSerializer(data=data)
+        if (order_serializer.is_valid()):
+            order = order_serializer.save()
+
+            items = Cart.objects.all().filter(user=self.request.user).all()
+
+            for item in items.values():
+                orderitem = OrderItem(
+                    order=order,
+                    menuitem_id=item['menuitem_id'],
+                    price=item['price'],
+                    quantity=item['quantity'],
+                )
+                orderitem.save()
+
+            Cart.objects.all().filter(user=self.request.user).delete() #Delete cart items
+
+            result = order_serializer.data.copy()
+            result['total'] = total
+            return Response(order_serializer.data)
+    
+    def get_total_price(self, user):
+        total = 0
+        items = Cart.objects.all().filter(user=user).all()
+        for item in items.values():
+            total += item['price']
+        return total
+
+
+class SingleOrderView(generics.RetrieveUpdateAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        if self.request.user.groups.count()==0: # Normal user, not belonging to any group = Customer
+            return Response('Not Ok')
+        else: #everyone else - Super Admin, Manager and Delivery Crew
+            return super().update(request, *args, **kwargs)
+
+
+
+class GroupViewSet(viewsets.ViewSet):
+    permission_classes = [IsAdminUser]
+    def list(self, request):
+        users = User.objects.all().filter(groups__name='Manager')
+        items = UserSerilializer(users, many=True)
+        return Response(items.data)
+
+    def create(self, request):
+        user = get_object_or_404(User, username=request.data['username'])
+        managers = Group.objects.get(name="Manager")
+        managers.user_set.add(user)
+        return Response({"message": "user added to the manager group"}, 200)
+
+    def destroy(self, request):
+        user = get_object_or_404(User, username=request.data['username'])
+        managers = Group.objects.get(name="Manager")
+        managers.user_set.remove(user)
+        return Response({"message": "user removed from the manager group"}, 200)
+
+class DeliveryCrewViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+    def list(self, request):
+        users = User.objects.all().filter(groups__name='Delivery Crew')
+        items = UserSerilializer(users, many=True)
+        return Response(items.data)
+
+    def create(self, request):
+        #only for super admin and managers
+        if self.request.user.is_superuser == False:
+            if self.request.user.groups.filter(name='Manager').exists() == False:
+                return Response({"message":"forbidden"}, status.HTTP_403_FORBIDDEN)
+        
+        user = get_object_or_404(User, username=request.data['username'])
+        dc = Group.objects.get(name="Delivery Crew")
+        dc.user_set.add(user)
+        return Response({"message": "user added to the delivery crew group"}, 200)
+
+    def destroy(self, request):
+        #only for super admin and managers
+        if self.request.user.is_superuser == False:
+            if self.request.user.groups.filter(name='Manager').exists() == False:
+                return Response({"message":"forbidden"}, status.HTTP_403_FORBIDDEN)
+        user = get_object_or_404(User, username=request.data['username'])
+        dc = Group.objects.get(name="Delivery Crew")
+        dc.user_set.remove(user)
+        return Response({"message": "user removed from the delivery crew group"}, 200)
+
+
+:::
+
+
+
+
+$urls.py - client-side
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('categories', views.CategoriesView.as_view()),
+    path('menu-items', views.MenuItemsView.as_view()),
+    path('menu-items/<int:pk>', views.SingleMenuItemView.as_view()),
+    path('cart/menu-items', views.CartView.as_view()),
+    path('orders', views.OrderView.as_view()),
+    path('orders/<int:pk>', views.SingleOrderView.as_view()),
+    path('groups/manager/users', views.GroupViewSet.as_view(
+        {'get': 'list', 'post': 'create', 'delete': 'destroy'})),
+
+    path('groups/delivery-crew/users', views.DeliveryCrewViewSet.as_view(
+        {'get': 'list', 'post': 'create', 'delete': 'destroy'}))
+]
+
+:::
+
+
+
+
+$urls.py///config.init//“apache” load configuration (terraform.blahhblah..methinks?🤔) - server-side
+:::
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/',include('LittleLemonDRF.urls')),
+    path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls.authtoken')),
